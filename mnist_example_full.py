@@ -10,7 +10,14 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
 
+import numpy as np
+
 from py4j.java_gateway import JavaGateway
+
+
+def dump_csv(dataset, filename):
+    np.savetxt(filename, dataset.reshape( (dataset.shape[0], -1) ), delimiter=",", fmt="%.8f")
+
 
 batch_size = 128
 nb_classes = 10
@@ -76,6 +83,11 @@ model.save_weights("/tmp/mnist_weights.h5")
 
 # model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
 #           verbose=1, validation_data=(X_test, Y_test))
+
+dump_csv(X_train, "/tmp/x_train.csv")
+dump_csv(X_test, "/tmp/x_test.csv")
+dump_csv(Y_train, "/tmp/y_train.csv")
+dump_csv(Y_test, "/tmp/y_test.csv")
 
 gateway = JavaGateway()
 gateway.fit(
