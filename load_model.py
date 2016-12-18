@@ -24,8 +24,8 @@ X_test /= 255
 
 Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-model = load_model("/tmp/mnist_model.hd5")
-model.load_weights("/tmp/mnist_weights_dl4j.hd5")
+model = load_model("/tmp/mnist_model.h5")
+model.load_weights("/tmp/mnist_weights_dl4j.h5")
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 print('Test score:', score[0])

@@ -1,5 +1,6 @@
 from __future__ import print_function
 import numpy as np
+
 np.random.seed(1337)  # for reproducibility
 
 from keras.datasets import mnist
@@ -9,9 +10,11 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
 
+from py4j.java_gateway import JavaGateway
+
 batch_size = 128
 nb_classes = 10
-nb_epoch = 3 
+nb_epoch = 3
 
 # input image dimensions
 img_rows, img_cols = 28, 28
@@ -68,15 +71,24 @@ model.compile(loss='categorical_crossentropy',
               optimizer='adadelta',
               metrics=['accuracy'])
 
-model.save("/tmp/mnist_model.hd5")
-model.save_weights("/tmp/mnist_weights.hd5")
+model.save("/tmp/mnist_model.h5")
+model.save_weights("/tmp/mnist_weights.h5")
 
 # model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
 #           verbose=1, validation_data=(X_test, Y_test))
 
-
+gateway = JavaGateway()
+gateway.fit(
+    "/tmp/mnist_model.h5",
+    "/tmp/mnist_weights.h5",
+    "/tmp/x_train.csv",
+    "/tmp/y_train.csv",
+    batch_size,
+    nb_epoch,
+    "/tmp/x_test.csv",
+    "/tmp/y_test.csv",
+)
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
-

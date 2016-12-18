@@ -68,7 +68,7 @@ model.compile(loss='categorical_crossentropy',
               optimizer='adadelta',
               metrics=['accuracy'])
 
-model.save("/tmp/mnist_model.hd5")
-model.save_weights("/tmp/mnist_weights.hd5")
+model.save("/tmp/mnist_model.h5")
+model.save_weights("/tmp/mnist_weights.h5")
 
 print("model saved")
