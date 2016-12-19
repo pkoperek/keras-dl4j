@@ -78,11 +78,19 @@ model.compile(loss='categorical_crossentropy',
               optimizer='adadelta',
               metrics=['accuracy'])
 
-model.save("/tmp/mnist_model.h5")
-model.save_weights("/tmp/mnist_weights.h5")
+# model.save("/tmp/mnist_weights.h5")
+# model.save_weights("/tmp/mnist_weights.h5")
 
 # model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
 #           verbose=1, validation_data=(X_test, Y_test))
+
+########################################################################################################################
+# This code has to be a part of the hijacking method
+########################################################################################################################
+
+model_file = open("/tmp/mnist_model.json", "w")
+model_file.write(model.to_json())
+model_file.close()
 
 dump_csv(X_train, "/tmp/x_train.csv")
 dump_csv(X_test, "/tmp/x_test.csv")
@@ -91,8 +99,8 @@ dump_csv(Y_test, "/tmp/y_test.csv")
 
 gateway = JavaGateway()
 gateway.fit(
-    "/tmp/mnist_model.h5",
-    "/tmp/mnist_weights.h5",
+    "/tmp/mnist_model.json",
+    "sequential",
     "/tmp/x_train.csv",
     "/tmp/y_train.csv",
     batch_size,
@@ -100,6 +108,8 @@ gateway.fit(
     "/tmp/x_test.csv",
     "/tmp/y_test.csv",
 )
+
+########################################################################################################################
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 print('Test score:', score[0])
