@@ -1,4 +1,7 @@
+# based on official keras mnist example
+
 from __future__ import print_function
+
 import numpy as np
 
 np.random.seed(1337)  # for reproducibility
@@ -9,15 +12,15 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
-
-import numpy as np
+import h5py
 
 from py4j.java_gateway import JavaGateway
 
-
-def dump_csv(dataset, filename):
-    np.savetxt(filename, dataset.reshape( (dataset.shape[0], -1) ), delimiter=",", fmt="%.8f")
-
+def dump_h5(dataset, filename):
+    f = h5py.File(filename, 'w')
+    f.create_dataset("data", data=dataset)
+    f.flush()
+    f.close()
 
 batch_size = 128
 nb_classes = 10
@@ -88,25 +91,28 @@ model.compile(loss='categorical_crossentropy',
 # This code has to be a part of the hijacking method
 ########################################################################################################################
 
-model_file = open("/tmp/mnist_model.json", "w")
-model_file.write(model.to_json())
-model_file.close()
+model.save("/tmp/mnist_model.h5")
 
-dump_csv(X_train, "/tmp/x_train.csv")
-dump_csv(X_test, "/tmp/x_test.csv")
-dump_csv(Y_train, "/tmp/y_train.csv")
-dump_csv(Y_test, "/tmp/y_test.csv")
+print("Dumping data")
+
+dump_h5(X_train, "/tmp/x_train.h5")
+dump_h5(Y_train, "/tmp/y_train.h5")
+
+print("Dumped data")
+
+# batch_size = 16
 
 gateway = JavaGateway()
 gateway.fit(
-    "/tmp/mnist_model.json",
+    "/tmp/mnist_model.h5",
     "sequential",
-    "/tmp/x_train.csv",
-    "/tmp/y_train.csv",
+    "/tmp/x_train.h5",
+    "/tmp/y_train.h5",
     batch_size,
     nb_epoch,
     "/tmp/x_test.csv",
     "/tmp/y_test.csv",
+    K.image_dim_ordering(),
 )
 
 ########################################################################################################################
