@@ -103,17 +103,16 @@ print("Dumped data")
 # batch_size = 16
 
 gateway = JavaGateway()
-gateway.fit(
-    "/tmp/mnist_model.h5",
-    "sequential",
-    "/tmp/x_train.h5",
-    "/tmp/y_train.h5",
-    batch_size,
-    nb_epoch,
-    "/tmp/x_test.csv",
-    "/tmp/y_test.csv",
-    K.image_dim_ordering(),
-)
+
+params_builder = gateway.jvm.org.deeplearning4j.keras.EntryPointFitParameters.builder()
+params_builder.type("sequential")
+params_builder.modelFilePath("/tmp/mnist_model.h5")
+params_builder.nbEpoch(nb_epoch)
+params_builder.batchSize(batch_size)
+params_builder.trainFeaturesFile("/tmp/x_train.h5")
+params_builder.trainLabelsFile("/tmp/y_train.h5")
+params_builder.dimOrdering(K.image_dim_ordering())
+gateway.fit(params_builder.build())
 
 ########################################################################################################################
 
