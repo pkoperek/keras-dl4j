@@ -2,5 +2,9 @@
 
 Code for python part of keras - dl4j integration.
 
-(Currently contains sample code based on official Keras MNIST example,
- which contacts the dl4j server as schedules learning)
+## Using
+
+There are two ways to use this API.
+
+* Hijack/extend existing keras model
+* Use the low-level API manually
