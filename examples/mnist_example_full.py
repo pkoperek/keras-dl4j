@@ -12,37 +12,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
-from os import path
-import h5py
-import time
-
-from py4j.java_gateway import JavaGateway
-
-batch_file_template = "batch_{id}.h5"
-
-
-def dump_h5(dataset, directory_name, batch_size):
-    if path.exists(directory_name):
-        print("Path exists: " + directory_name + " omitting dump")
-        return
-
-    batch_id = 0
-    samples_count = dataset.shape[0]
-
-    begin = 0
-    end = batch_size
-
-    while begin < samples_count:
-        batch_file_name = batch_file_template.format(id=batch_id)
-        f = h5py.File(path.join(directory_name, batch_file_name), 'w')
-        f.create_dataset("data", data=dataset[begin:end])
-        f.flush()
-        f.close()
-
-        begin = end
-        end += batch_size
-        batch_id += 1
-
+from kerasdl4j import backend as dl4j
 
 batch_size = 128
 nb_classes = 10
@@ -83,6 +53,8 @@ Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 model = Sequential()
 
+dl4j.install_dl4j_backend(model)
+
 model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1],
                         border_mode='valid',
                         input_shape=input_shape))
@@ -103,42 +75,15 @@ model.compile(loss='categorical_crossentropy',
               optimizer='adadelta',
               metrics=['accuracy'])
 
-# model.save("/tmp/mnist_weights.h5")
-# model.save_weights("/tmp/mnist_weights.h5")
+model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1, validation_data=(X_test, Y_test))
+model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1, validation_data=(X_test, Y_test))
 
-# model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
-#           verbose=1, validation_data=(X_test, Y_test))
-
-########################################################################################################################
-# This code has to be a part of the hijacking method
-########################################################################################################################
-
-model.save("/tmp/mnist_model.h5")
-
-print("Dumping data")
-
-start = time.clock()
-dump_h5(X_train, "/tmp/x_train.h5", batch_size)
-dump_h5(Y_train, "/tmp/y_train.h5", batch_size)
-stop = time.clock()
-print("Dumping took: " + str(stop - start) + "s")
-
-print("Dumped data")
-
-gateway = JavaGateway()
-
-sequential = gateway.jvm.org.deeplearning4j.keras.KerasModelType.SEQUENTIAL
-params_builder = gateway.jvm.org.deeplearning4j.keras.EntryPointFitParameters.builder()
-params_builder.type(sequential)
-params_builder.modelFilePath("/tmp/mnist_model.h5")
-params_builder.nbEpoch(nb_epoch)
-params_builder.trainFeaturesDirectory("/tmp/x_train.h5")
-params_builder.trainLabelsDirectory("/tmp/y_train.h5")
-params_builder.dimOrdering(K.image_dim_ordering())
-gateway.fit(params_builder.build())
-
-########################################################################################################################
+# dl4j.dump_h5(X_train, batch_size)
+# dl4j.dump_h5(Y_train, batch_size)
+#
+# dl4j.fit_with_dl4j(model, dl4j, X_train, Y_train)
 
 score = model.evaluate(X_test, Y_test, verbose=0)
+
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
