@@ -8,7 +8,8 @@ MAINTAINER pkoperek@gmail.com
 ENV LIBND4J /libnd4j
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/community >> /etc/apk/repositories
-RUN apk add --update git cmake gcc make g++ py-pip python-dev openblas openblas-dev
+RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories
+RUN apk add --update git cmake gcc make g++ py-pip python-dev openblas openblas-dev hdf5 hdf5-dev
 
 # Upgrade pip
 RUN pip install --upgrade pip
@@ -22,19 +23,19 @@ RUN cd libnd4j && ./buildnativeoperations.sh && cd ..
 
 # nd4j
 RUN git clone --depth 1 https://github.com/deeplearning4j/nd4j.git
-RUN cd nd4j && mvn clean install -DskipTests -Dmaven.javadoc.skip=true -pl '!:nd4j-cuda-8.0,!:nd4j-cuda-8.0-platform,!:nd4j-tests' && cd ..
+RUN cd nd4j && mvn --settings /usr/share/maven/ref/settings-docker.xml clean install -DskipTests -Dmaven.javadoc.skip=true -pl '!:nd4j-cuda-8.0,!:nd4j-cuda-8.0-platform,!:nd4j-tests' && cd ..
 
 # datavec
 RUN git clone --depth 1 https://github.com/deeplearning4j/datavec.git
-RUN cd datavec && mvn clean install -DskipTests -Dmaven.javadoc.skip=true && cd ..
+RUN cd datavec && mvn --settings /usr/share/maven/ref/settings-docker.xml clean install -DskipTests -Dmaven.javadoc.skip=true && cd ..
 
 # test resources
 RUN git clone --depth 1 https://github.com/deeplearning4j/dl4j-test-resources.git
-RUN cd dl4j-test-resources && mvn clean install && cd ..
+RUN cd dl4j-test-resources && mvn --settings /usr/share/maven/ref/settings-docker.xml  clean install && cd ..
 
 # deeplearning4j
 RUN git clone --depth 1 https://github.com/deeplearning4j/deeplearning4j.git
-RUN cd deeplearning4j && mvn clean install -DskipTests -Dmaven.javadoc.skip=true -pl '!:deeplearning4j-cuda-8.0' && cd ..
+RUN cd deeplearning4j && mvn --settings /usr/share/maven/ref/settings-docker.xml clean install -DskipTests -Dmaven.javadoc.skip=true -pl '!:deeplearning4j-cuda-8.0' && cd ..
 
 # Hack: http://serverfault.com/questions/771211/docker-alpine-and-matplotlib
 RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
@@ -47,10 +48,14 @@ RUN pip install keras
 #
 
 # Install keras-dl4j
+RUN pip install h5py py4j xxhash
 RUN mkdir /keras-dl4j
-ADD .. /keras-dl4j
-RUN cd keras-dl4j && python setup.py install && cd ..
+ADD . /keras-dl4j
+RUN cd keras-dl4j && python setup.py sdist && pip install dist/kerasdl4j*tar.gz && cd ..
 
 EXPOSE 8888
+ENV KERAS_BACKEND theano
 
-CMD ["jupyter", "notebook", "--port", "8888"]
+# adding `sh -c` solves the problem of dying kernels:
+# https://github.com/ipython/ipython/issues/7062
+CMD ["sh", "keras-dl4j/jupyter_start.sh"]

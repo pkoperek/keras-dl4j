@@ -8,5 +8,5 @@ setup(
     author_email='pkoperek@gmail.com',
     url='https://github.com/pkoperek/keras-dl4j',
     packages=['kerasdl4j'],
-    requires=['keras', 'py4j', 'h5py', 'xxhash'],
+    install_requires=['keras', 'py4j', 'h5py', 'xxhash'],
 )
