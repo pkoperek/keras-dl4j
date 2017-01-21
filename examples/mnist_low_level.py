@@ -75,7 +75,7 @@ y_path = dl4j.generate_tmp_path()
 dl4j.dump_h5(X_train, batch_size, x_path)
 dl4j.dump_h5(Y_train, batch_size, y_path)
 
-dl4j.fit_with_dl4j(model, dl4j, x_path, y_path)
+dl4j.fit_with_dl4j(model, nb_epoch, x_path, y_path)
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 
