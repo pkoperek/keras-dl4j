@@ -49,7 +49,8 @@ RUN pip install keras
 
 # Install keras-dl4j
 RUN pip install h5py py4j xxhash
-RUN mkdir /keras-dl4j
+RUN mkdir /keras-dl4j /root/.keras
+COPY ./keras.json /root/.keras
 ADD . /keras-dl4j
 RUN cd keras-dl4j && python setup.py sdist && pip install dist/kerasdl4j*tar.gz && cd ..
 
