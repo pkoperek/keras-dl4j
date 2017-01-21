@@ -77,8 +77,8 @@ def fit_with_dl4j(
     params_builder.type(sequential)
     params_builder.modelFilePath(model_file_path)
     params_builder.nbEpoch(nb_epoch)
-    params_builder.trainFeaturesDirectory(features.__dl4j_hdf5_dump_path)
-    params_builder.trainLabelsDirectory(labels.__dl4j_hdf5_dump_path)
+    params_builder.trainFeaturesDirectory(features_directory)
+    params_builder.trainLabelsDirectory(labels_directory)
     params_builder.dimOrdering(K.image_dim_ordering())
     gateway.fit(params_builder.build())
 
