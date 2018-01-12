@@ -14,8 +14,13 @@ RUN apk add --update git cmake gcc make g++ py-pip python-dev openblas openblas-
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# jupyter
+# jupyter & keras
 RUN pip install jupyter
+
+# Hack: http://serverfault.com/questions/771211/docker-alpine-and-matplotlib
+RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
+
+RUN pip install keras
 
 # libnd4j
 RUN git clone --depth 1 https://github.com/deeplearning4j/libnd4j.git
@@ -36,12 +41,8 @@ RUN cd dl4j-test-resources && mvn --settings /usr/share/maven/ref/settings-docke
 # deeplearning4j
 RUN git clone --depth 1 https://github.com/deeplearning4j/deeplearning4j.git
 RUN cd deeplearning4j && mvn --settings /usr/share/maven/ref/settings-docker.xml clean install -DskipTests -Dmaven.javadoc.skip=true -pl '!:deeplearning4j-cuda-8.0' && cd ..
-
-# Hack: http://serverfault.com/questions/771211/docker-alpine-and-matplotlib
-RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
-
-# Install keras
-RUN pip install keras
+RUN cd deeplearning4j/deeplearning4j-keras && mvn --settings /usr/share/maven/ref/settings-docker.xml clean package -Pserver-jar && cd ../..
+RUN cp deeplearning4j/deeplearning4j-keras/target/deeplearning4j-keras-*-SNAPSHOT.jar /
 
 #
 # keras-dl4j stuff
